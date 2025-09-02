@@ -1,4 +1,4 @@
-// import React, {useCallback, useEffect} from 'react'
+import React, {useCallback, useEffect} from 'react'
 import { useForm } from 'react-hook-form'
 import {Button, Input, Select, RTE} from '../index'
 import appwriteService from '../../appwrite/config';
@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router-dom'
 import {useSelector } from 'react-redux'
 
 function PostForm({post}) {
-    const {register, handleSubmit, control, getValues} = useForm({
+    const {register, handleSubmit, watch, setValue, control, getValues} = useForm({
         defaultValues: {
             title: post?.title || '',
-            // slug: post?.$id || '',
+            slug: post?.$id || '',
             content: post?.content || '',
             status: post?.status || 'active',
         },
@@ -49,30 +49,30 @@ function PostForm({post}) {
         }
     }
 
-    // const slugTransform = useCallback((value) => {
-    //     if (value && typeof value === 'string') 
-    //     return value
-    //         .trim()
-    //         .toLowerCase()
-    //         .replace(/^[a-zA-Z\d\s]+/g, '-')
-    //         .replace(/\s/g, '-')
+    const slugTransform = useCallback((value) => {
+        if (value && typeof value === 'string') 
+        return value
+            .trim()
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // remove special chars
+            .replace(/\s+/g, '-');    // spaces → dash
         
-    //     return '';
+        return '';
         
-    // },[]) 
+    },[]) 
 
-    // useEffect (() => {
-    //     const subscription = watch((value, {name}) => {
-    //         if(name === 'title'){
-    //             setValue('slug', slugTransform(value.title,{shouldValidate: true}))
-    //         }
-    //     })
+    useEffect (() => {
+        const subscription = watch((value, {name}) => {
+            if(name === 'title'){
+                setValue('slug', slugTransform(value.title,{shouldValidate: true}))
+            }
+        })
 
-    //     return () => {
-    //         subscription.unsubscribe()
-    //     }
+        return () => {
+            subscription.unsubscribe()
+        }
 
-    // }, [watch, slugTransform, setValue])
+    }, [watch, slugTransform, setValue])
 
 
     return (
@@ -84,7 +84,7 @@ function PostForm({post}) {
                     className="mb-4"
                     {...register("title", { required: true })}
                 />
-                {/* <Input
+                <Input
                     label="Slug :"
                     placeholder="Slug"
                     className="mb-4"
@@ -92,7 +92,7 @@ function PostForm({post}) {
                     onInput={(e) => {
                         setValue("slug", slugTransform(e.currentTarget.value), { shouldValidate: true });
                     }}
-                /> */}
+                />
                 <RTE label="Content :" name="content" control={control} defaultValue={getValues("content")} />
             </div>
             <div className="w-1/3 px-2">
@@ -106,7 +106,7 @@ function PostForm({post}) {
                 {post && (
                     <div className="w-full mb-4">
                         <img
-                            src={appwriteService.getFilePreview(post.featuredimage)}
+                            src={appwriteService.getFile(post.featuredimage)}
                             alt={post.title}
                             className="rounded-lg"
                         />

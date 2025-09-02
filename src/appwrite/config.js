@@ -12,12 +12,12 @@ export class Service {
         this.databases = new Databases(this.client);
         this.bucket = new Storage(this.client);
     }
-    async createPost({title, slug, content, featuredimage, status, userId}){
+    async createPost({title,slug, content, featuredimage, status, userId}){
         try {
             return await this.databases.createDocument(
             conf.appwriteDatabaseId,
             conf.appwriteCollectionId,
-            slug,
+             slug,
             {
                 title,
                 
@@ -62,10 +62,10 @@ export class Service {
             conf.appwriteCollectionId,
             slug
            ) 
-           return
+           return true;
         } catch (error) {
             console.log("AppWrite :: deletePost :: error", error);
-            return false
+            return false;
         }
     }
 
@@ -81,7 +81,7 @@ export class Service {
         }
     }
 
-    async getPosts(queries = [Query.equal("status", "active")]){
+    async getPosts(queries = [Query.equal("status", ["active"])]){
         try {
             return await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -121,14 +121,16 @@ export class Service {
         }
     } 
 
-    async getFilePreview(fileId){
+      getFile(fileId ) {
         try {
-            return  this.bucket.getFilePreview(
+            return  this.bucket.getFileView(
                 conf.appwriteBucketId,
-                fileId
+                fileId,
             );
+             
         } catch (error) {
             console.log("AppWrite :: getFilePreview :: error", error);
+            return "";
         }
     }
 }

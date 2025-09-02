@@ -17,33 +17,48 @@ export default function Post() {
     useEffect(() => {
         if (slug) {
             appwriteService.getPost(slug).then((post) => {
-                if (post) {
-                    console.log(post);
-                    setPost(post)
-                } else {
-                    navigate("/")
-                };
+                if (post) setPost(post)
+                else  navigate("/")
+                
             });
         } else navigate("/");
     }, [slug, navigate]);
 
-    const deletePost = () => {
-        console.log("Trying to delete post:", post.$id);
-    console.log("Deleting file:", post.featuredimage);
-        appwriteService.deletePost(post.$id).then((status) => {
-            if (status) {
-                appwriteService.deleteFile(post.featuredimage);
-                navigate("/");
+    
+
+    const deletePost = async () => {
+    if (!post) return;
+
+    try {
+       const status = await appwriteService.deletePost(post.$id);
+        if (status) {
+            // Delete file if exists
+            if (post.featuredimage) {
+                await appwriteService.deleteFile(post.featuredimage);
             }
-        });
-    };
+            navigate("/"); // navigate after deletion
+        } else {
+            console.log("Failed to delete post from Appwrite");
+        }
+    } catch (error) {
+        console.log("Error deleting post:", error);
+    }
+
+       
+
+
+
+};
+
+
+
 
     return post ? (
         <div className="py-8">
             <Container>
                 <div className="w-full flex justify-center mb-4 relative border rounded-xl p-2">
                     <img
-                        src={appwriteService.getFilePreview(post.featuredimage)}
+                        src={appwriteService.getFile(post.featuredimage)}
                         alt={post.title}
                         className="rounded-xl"
                     />
